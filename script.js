@@ -1,17 +1,34 @@
 document.addEventListener('DOMContentLoaded', () => {
     const activityTableBody = document.querySelector('.activity-selection-section table tbody');
-    // رؤوس الأنشطة الفرعية التي تحتوي على data-activity-day و data-activity-name
-    const activityHeaders = document.querySelectorAll('table thead th[data-activity-day][data-activity-name]');
-    
-    const allSelectionsDataInput = document.getElementById('allSelectionsData');
     const activitySubmissionForm = document.getElementById('activity-submission-form');
     const formStatus = document.getElementById('form-status');
     const selectionSummary = document.getElementById('selection-summary');
     const summaryText = document.getElementById('summary-text');
 
     // لتخزين الأنشطة المختارة لكل موظف
-    // الهيكل: { "اسم الموظف": ["اليوم الأول: نشاط 1", "اليوم الثاني: نشاط 3"], ... }
     const employeeSelections = {};
+
+    // ==========================================================
+    // هذه الروابط والمعرفات الخاصة بنموذج جوجل الخاص بك        
+    // تم استخراجها من الرابط الذي أرسلته لي مسبقاً           
+    // ==========================================================
+    const GOOGLE_FORM_URL_BASE = 'https://docs.google.com/forms/d/e/1FAIpQLSd7g28wJ6hJ5yG7K4g5k3t2B0mPq9D2v8G9k9k8/formResponse';
+    
+    const GOOGLE_FORM_ENTRY_IDS = {
+        employeeName: 'entry.2005620554',
+        departmentName: 'entry.1706692257',
+        'اليوم الأول: نشاط 1': 'entry.1996282156',
+        'اليوم الأول: نشاط 2': 'entry.766723223',
+        'اليوم الأول: نشاط 3': 'entry.1444983995',
+        'اليوم الثاني: نشاط 1': 'entry.1755106567',
+        'اليوم الثاني: نشاط 2': 'entry.1802996500',
+        'اليوم الثاني: نشاط 3': 'entry.888746279',
+        'اليوم الثالث: نشاط 1': 'entry.277868512',
+        'اليوم الثالث: نشاط 2': 'entry.1118181673',
+        'اليوم الثالث: نشاط 3': 'entry.1158652077',
+    };
+    // ==========================================================
+
 
     // معالجة النقر على مربعات الاختيار
     activityTableBody.addEventListener('change', (event) => {
@@ -26,21 +43,25 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const fullActivityString = `${activityDay}: ${activityName}`; // مثال: "اليوم الأول: نشاط 1"
 
-            // إذا لم يكن الموظف موجوداً في employeeSelections، أضف مصفوفة فارغة له
+            // إذا لم يكن الموظف موجوداً في employeeSelections، أضف كائن له
             if (!employeeSelections[employeeName]) {
-                employeeSelections[employeeName] = [];
+                const departmentName = row.children[1].textContent; // افتراض أن اسم الجهة هو في العمود الثاني من الصف
+                employeeSelections[employeeName] = {
+                    department: departmentName,
+                    activities: []
+                };
             }
 
             if (checkbox.checked) { // إذا تم تحديد مربع الاختيار
                 // أضف النشاط إلى قائمة اختيارات الموظف إذا لم يكن موجوداً بالفعل
-                if (!employeeSelections[employeeName].includes(fullActivityString)) {
-                    employeeSelections[employeeName].push(fullActivityString);
+                if (!employeeSelections[employeeName].activities.includes(fullActivityString)) {
+                    employeeSelections[employeeName].activities.push(fullActivityString);
                 }
             } else { // إذا تم إلغاء تحديد مربع الاختيار
                 // إزالة النشاط من قائمة اختيارات الموظف
-                employeeSelections[employeeName] = employeeSelections[employeeName].filter(item => item !== fullActivityString);
+                employeeSelections[employeeName].activities = employeeSelections[employeeName].activities.filter(item => item !== fullActivityString);
                 // إذا لم يعد للموظف أي اختيارات، يمكن حذف اسمه من الكائن
-                if (employeeSelections[employeeName].length === 0) {
+                if (employeeSelections[employeeName].activities.length === 0) {
                     delete employeeSelections[employeeName];
                 }
             }
@@ -53,12 +74,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateSummaryDisplay() {
         let summaryParts = [];
         for (const empName in employeeSelections) {
-            if (employeeSelections[empName].length > 0) {
+            const data = employeeSelections[empName];
+            if (data.activities.length > 0) {
                 // إضافة اسم الجهة إلى الملخص
-                const employeeRow = document.querySelector(`tr[data-employee-name="${employeeName}"]`);
-                const departmentName = employeeRow ? employeeRow.children[1].textContent : 'غير معروف'; // العمود الثاني هو الجهة
-                
-                summaryParts.push(`${empName} (${departmentName}): (${employeeSelections[empName].join('، ')})`);
+                summaryParts.push(`${empName} (${data.department}): (${data.activities.join('، ')})`);
             }
         }
 
@@ -70,14 +89,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // التعامل مع إرسال النموذج باستخدام Formspree
+    // التعامل مع إرسال النموذج إلى Google Forms
     activitySubmissionForm.addEventListener('submit', async (event) => {
         event.preventDefault(); // منع الإرسال الافتراضي للصفحة
 
         // التحقق مما إذا تم اختيار أي أنشطة
         let hasSelections = false;
         for (const empName in employeeSelections) {
-            if (employeeSelections[empName].length > 0) {
+            if (employeeSelections[empName].activities.length > 0) {
                 hasSelections = true;
                 break;
             }
@@ -94,71 +113,72 @@ document.addEventListener('DOMContentLoaded', () => {
         formStatus.className = ''; 
         formStatus.classList.remove('hidden');
 
-        // تجهيز البيانات للإرسال
-        let formattedSelections = [];
+        // حلقة لإرسال البيانات لكل موظف على حدة
         for (const empName in employeeSelections) {
-            if (employeeSelections[empName].length > 0) {
-                // إضافة اسم الجهة إلى البيانات المرسلة
-                const employeeRow = document.querySelector(`tr[data-employee-name="${employeeName}"]`);
-                const departmentName = employeeRow ? employeeRow.children[1].textContent : 'غير معروف';
-                formattedSelections.push(`${empName} (${departmentName}): ${employeeSelections[empName].join(', ')}`);
+            const empData = employeeSelections[empName];
+            
+            const formData = new FormData();
+            
+            // إضافة اسم الموظف واسم الجهة إلى بيانات النموذج
+            if (GOOGLE_FORM_ENTRY_IDS.employeeName) {
+                formData.append(GOOGLE_FORM_ENTRY_IDS.employeeName, empName);
             }
-        }
-        allSelectionsDataInput.value = formattedSelections.join(' | '); // ملء الحقل المخفي
+            if (GOOGLE_FORM_ENTRY_IDS.departmentName) {
+                formData.append(GOOGLE_FORM_ENTRY_IDS.departmentName, empData.department);
+            }
 
-        const form = event.target;
-        const data = new FormData(form);
-
-        try {
-            const response = await fetch(form.action, {
-                method: form.method,
-                body: data,
-                headers: {
-                    'Accept': 'application/json'
+            // إضافة حالة كل نشاط (محدد 'X' أو فارغ '')
+            for (const activityKey in GOOGLE_FORM_ENTRY_IDS) {
+                // نتجاهل employeeName و departmentName لأننا أضفناهما بالفعل
+                if (activityKey !== 'employeeName' && activityKey !== 'departmentName') {
+                    if (empData.activities.includes(activityKey)) {
+                        formData.append(GOOGLE_FORM_ENTRY_IDS[activityKey], 'X'); // إذا تم اختيار النشاط، أرسل 'X'
+                    } else {
+                        formData.append(GOOGLE_FORM_ENTRY_IDS[activityKey], ''); // إذا لم يتم اختياره، أرسل قيمة فارغة
+                    }
                 }
-            });
+            }
 
-            if (response.ok) {
-                formStatus.textContent = 'تم إرسال جميع الاختيارات بنجاح! شكراً لكم.';
-                formStatus.className = 'success';
-                
-                // إعادة تعيين الواجهة بعد الإرسال الناجح
-                resetFormAndUI();
-            } else {
-                const result = await response.json();
-                if (Object.hasOwnProperty.call(result, 'errors')) {
-                    formStatus.textContent = result.errors.map(error => error.message).join(', ');
-                } else {
-                    formStatus.textContent = 'حدث خطأ أثناء الإرسال. الرجاء المحاولة مرة أخرى.';
-                }
+            try {
+                // إرسال الطلب إلى Google Forms
+                const response = await fetch(GOOGLE_FORM_URL_BASE, {
+                    method: 'POST',
+                    body: formData,
+                    mode: 'no-cors', // مهم للسماح بالإرسال من النطاقات المختلفة (CORS)
+                });
+                // بما أننا نستخدم 'no-cors', لن نحصل على استجابة يمكن تحليلها،
+                // لكن الطلب سيتم إرساله في الخلفية.
+
+            } catch (error) {
+                console.error(`Error sending data for ${empName}:`, error);
+                formStatus.textContent = 'حدث خطأ أثناء إرسال بعض البيانات. الرجاء المحاولة مرة أخرى.';
                 formStatus.className = 'error';
+                return; // التوقف عن الإرسال في حال حدوث خطأ
             }
-        } catch (error) {
-            formStatus.textContent = 'حدث خطأ في الاتصال. الرجاء التحقق من اتصال الإنترنت والمحاولة مرة أخرى.';
-            formStatus.className = 'error';
-            console.error('Fetch error:', error);
         }
+
+        // عند الانتهاء من جميع الإرسالات بنجاح
+        formStatus.textContent = 'تم إرسال جميع الاختيارات بنجاح إلى جداول البيانات! شكراً لكم.';
+        formStatus.className = 'success';
+        resetFormAndUI(); // إعادة تعيين النموذج بعد الإرسال
     });
 
-    // وظيفة لإعادة تعيين النموذج والواجهة بالكامل بعد الإرسال
+    // دالة لإعادة تعيين النموذج بعد الإرسال
     function resetFormAndUI() {
-        // مسح جميع الاختيارات من الكائن
+        // مسح جميع الاختيارات المخزنة
         for (const key in employeeSelections) {
             delete employeeSelections[key];
         }
         
-        // إعادة تعيين مربعات الاختيار في الجدول
+        // إلغاء تحديد جميع مربعات الاختيار في الجدول
         document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-            checkbox.checked = false; // إلغاء تحديد جميع مربعات الاختيار
+            checkbox.checked = false;
         });
         
-        // مسح الحقل المخفي
-        allSelectionsDataInput.value = '';
-        
-        // إخفاء ملخص الاختيارات
+        // تحديث الملخص لإخفائه
         updateSummaryDisplay();
     }
 
-    // تهيئة عرض الملخص عند تحميل الصفحة لأول مرة
+    // استدعاء الأنشطة في البداية لتحديث الملخص (فقط في حال وجود بيانات مخزنة من قبل)
     updateSummaryDisplay();
 });
