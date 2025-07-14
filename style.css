@@ -1,0 +1,234 @@
+/* الألوان الأساسية لوزارة الحج والعمرة */
+:root {
+    --white: #ffffff;
+    --black: #000000;
+    --green-light: #4CAF50; /* أخضر فاتح، لجعله أقل حدة */
+    --green-dark: #0A6A2C; /* أخضر أغمق قليلاً للعناوين والأزرار الرئيسية */
+    --light-gray: #f7f7f7;
+    --dark-text: #333333;
+    --border-color: #e0e0e0;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--light-gray);
+    color: var(--dark-text);
+    direction: rtl; /* لدعم اللغة العربية من اليمين لليسار */
+    text-align: right; /* لمحاذاة النص لليمين */
+}
+
+header {
+    background-color: var(--green-dark); /* استخدم الأخضر الداكن للرأس */
+    color: var(--white);
+    padding: 1rem 0;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+header .logo img {
+    height: 70px; /* حجم الشعار */
+    margin-inline-end: 20px; /* مسافة بين الشعار والعنوان */
+}
+
+h1, h2, h3 {
+    color: var(--dark-text); /* العناوين باللون الأسود أو الرمادي الداكن */
+}
+
+main {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 20px auto;
+    background-color: var(--white);
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.08);
+}
+
+.activity-selection-section h2, .submission-form-section h2 {
+    border-bottom: 2px solid var(--green-light); /* خط سفلي أخضر فاتح */
+    padding-bottom: 10px;
+    margin-bottom: 25px;
+    color: var(--green-dark); /* عنوان القسم بالأخضر الداكن */
+}
+
+.instructions {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 1.1em;
+    color: var(--dark-text);
+    padding: 10px 20px;
+    background-color: #e6ffe6; /* خلفية خفيفة للتوجيهات */
+    border-radius: 8px;
+    border: 1px solid var(--green-light);
+}
+
+/* تصميم الجدول */
+.table-container {
+    overflow-x: auto; /* لجعل الجدول قابلاً للتمرير أفقياً على الشاشات الصغيرة */
+    margin-bottom: 30px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 auto;
+    background-color: var(--white);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+table th, table td {
+    border: 1px solid var(--border-color);
+    padding: 15px 10px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* رؤوس الجدول (الصف الأول والثاني) */
+table thead tr:first-child th {
+    background-color: var(--green-dark); /* اليوم الأول، الثاني، الثالث */
+    color: var(--white);
+    font-weight: bold;
+    font-size: 1.2em;
+    white-space: nowrap;
+}
+
+table thead tr:last-child th {
+    background-color: var(--green-light); /* نشاط 1، 2، 3 */
+    color: var(--white);
+    font-weight: bold;
+    font-size: 1em;
+    white-space: nowrap;
+}
+
+/* اسم المشارك واسم الجهة في رأس الجدول */
+table th[rowspan="2"] {
+    background-color: var(--green-dark);
+    color: var(--white);
+    font-size: 1.2em;
+}
+
+
+table tbody tr:nth-child(even) {
+    background-color: var(--light-gray); /* لون خلفية الصفوف الزوجية */
+}
+
+table tbody tr:hover {
+    background-color: #eef; /* تغيير اللون عند مرور المؤشر */
+}
+
+/* اسم المشارك واسم الجهة في جسم الجدول */
+table tbody td:first-child,
+table tbody td:nth-child(2) { /* اسم الجهة هو العمود الثاني الآن */
+    font-weight: bold;
+    color: var(--dark-text);
+    text-align: right; /* محاذاة لليمين */
+    padding-right: 20px;
+    background-color: var(--light-gray);
+}
+
+/* تنسيق مربعات الاختيار */
+input[type="checkbox"] {
+    transform: scale(1.5); /* تكبير حجم مربع الاختيار */
+    margin: 0; /* إزالة أي هوامش افتراضية */
+    cursor: pointer;
+}
+
+
+.hidden {
+    display: none !important;
+}
+
+#selection-summary {
+    background-color: #e6ffe6;
+    color: var(--green-dark);
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    text-align: center;
+    font-weight: bold;
+    border: 1px solid var(--green-dark);
+    font-size: 1.1em;
+}
+
+/* تصميم النموذج */
+.submission-form-section {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px dashed var(--border-color);
+}
+
+.submit-btn {
+    background-color: var(--black); /* زر الإرسال باللون الأسود */
+    color: var(--white);
+    border: none;
+    padding: 15px 30px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1.2em;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    width: auto;
+    display: block;
+    margin: 20px auto 0;
+}
+
+.submit-btn:hover {
+    background-color: var(--green-dark); /* يتغير للأخضر عند التحويم */
+    transform: translateY(-2px);
+}
+
+#form-status {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+}
+
+#form-status.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+#form-status.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+footer {
+    background-color: var(--black);
+    color: var(--white);
+    text-align: center;
+    padding: 1.5rem 0;
+    margin-top: 50px;
+    font-size: 0.9em;
+}
+
+/* تصميم تجاوبي */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 1.4em;
+        margin-inline-start: 10px;
+    }
+    table th, table td {
+        padding: 10px 5px;
+        font-size: 0.9em;
+    }
+    input[type="checkbox"] {
+        transform: scale(1.2);
+    }
+    .submit-btn {
+        width: 90%;
+        padding: 12px 25px;
+        font-size: 1em;
+    }
+    header .logo img {
+        height: 50px;
+    }
+}
